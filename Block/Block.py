@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import hashlib as hasher
 import sys
 import datetime as dater
