@@ -1,4 +1,5 @@
 import json
+import simplejson
 from itertools import islice
 
 data = {
@@ -41,19 +42,30 @@ data2 = {
     }]
 }
 
-json_str = json.dumps(data)
-json_str2 = json.dumps(data2)
+json_str = json.dumps(data, indent=4)
+json_str2 = json.dumps(data2, indent=4)
 
 # print(data)
 # print("json test\n" + json_str)
 # print(data['amount'])
 
 file = open("../data/test.json",'w')
-file.write(json_str+"\n")
+file.write("{\"AnonyPay\" :[")
+file.write(json_str+"\n,")
 file.write(json_str2)
+file.write("]}")
 file.close()
 
-file = open("../data/test.json",'r')
-now_data = file.next()
+file = open("../data/Chain/ChainNode_1.json",'r')
+lines = file.readlines()
+nowdata = ""
+for line in lines:
+    nowdata = nowdata + line
+now_json = simplejson.loads(nowdata)
+now_json_data = now_json
+print(now_json_data['index'])
+# print(now_json_data['index'])
 file.close()
-print(now_data)
+
+# json_get = json.loads(now_data)
+# print(json_get['index'])

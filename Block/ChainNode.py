@@ -41,7 +41,7 @@ class Node:
         pass
 
     def display(self):
-        str = '%s : %d\n%s : %s\n%s : %s\n%s : %s\n%s : %f\n' % ("index", self.index, "account", self.account, \
+        str = '%s : %d\n%s : %s\n%s : %s\n%s : %s\n%s : %f' % ("index", self.index, "account", self.account, \
                "address", self.address, "category", self.category,"amount", self.amount)
         return str
 
@@ -50,10 +50,12 @@ class ChainNodeList:
         self.index = input["index"]
         self.time = input["time"]
         self.pre_hash = input["pre_hash"]
-        self.listNum = input["listNum"]
-        self.hash = self.hash_block()
+        self.listNum = 0
+        if "hash" in input:
+            self.hash = input['hash']
+        else:
+            self.hash = self.hash_block()
         self.point = Chain()
-
         pass
 
     def hash_block(self):
@@ -72,23 +74,16 @@ class ChainNodeList:
             return 1
         pass
 
-    # def appendNextChain(self,nextChain):
-    #     if isinstance(nextChain,ChainNodeList):
-    #         self.next = nextChain
-    #         return 0
-    #     else:
-    #         print("[ChainNode]:you can't append AnonyPay chainnode which is not type of ChainNode\nerror type append")
-    #         return 1
-    #     pass
-
     def display(self):
-        str = '%s : %d\n%s : %s\n%s : %s\n%s : %s\n%s : %s\n' % ("index", self.index, \
+        str = '%s : %d\n%s : %s\n%s : %s\n%s : %s\n%s : %s' % ("index", self.index, \
                "create time ", self.time, "previous hash", self.pre_hash, "deal nums", self.listNum, "node hash", self.hash)
+        print("++++++++++++Chain Info:+++++++++++++")
         print(str)
         for disNode in self.point:
-            if disNode.index == -1:
+            print("----------Transaction Info----------")
+            if disNode.data.index == -1:
                 continue
-            print(disNode.display()+'\n')
+            print(disNode.data.display())
 
 #test
 # list = Chain()
