@@ -8,7 +8,7 @@ import base64
 import codeCreate
 
 def createKey(name):
-    (publickey, privatekey) = rsa.newkeys(1024)
+    (publickey, privatekey) =  rsa.newkeys(1280)
     if os.path.exists("../KeyFile/"+name):
         print("name is already exists")
         return -1

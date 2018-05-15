@@ -50,7 +50,10 @@ class ChainNodeList:
         self.index = input["index"]
         self.time = input["time"]
         self.pre_hash = input["pre_hash"]
-        self.listNum = 0
+        try:
+            self.listNum = input['nums']
+        except KeyError:
+            self.listNum = 0
         if "hash" in input:
             self.hash = input['hash']
         else:
@@ -91,3 +94,4 @@ class ChainNodeList:
 # list.append(cNode("b"))
 # for iter in list:
 #     print(iter.data)
+

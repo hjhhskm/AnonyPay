@@ -1,6 +1,6 @@
 import redis
 
-import Block.ChainNode
+import ChainNode
 #与redis操作的相关函数
 
 # 与redis建立连接
@@ -8,14 +8,14 @@ def startConnectedToRedis(nums = 0):
     redis_connect = redis.Redis(host="123.206.190.67",port=6379,db=nums)
     return redis_connect
 
-#关闭指定的redis连接
-def closeConnectedRedis(redis_connect):
-    if(redis_connect != None):
-        redis_connect.close()
-        print("close connected success")
-    else:
-        print("connected is none")
-    pass
+#关闭指定的redis连接,redis基于连接池进行操作，无需手动操作连接
+# def closeConnectedRedis(redis_connect):
+#     if(redis_connect != None):
+#         redis_connect.close()
+#         print("close connected success")
+#     else:
+#         print("connected is none")
+#     pass
 
 #通过name查找Block编号
 def getBlockIndexByName(chainName, redis_connect):
@@ -210,3 +210,52 @@ def setNodeByIndex(nodeList,chainIndex,redis_connect):
         redis_connect.set(str(chainIndex)+'li'+str(node.index)+'cate',node.data.category)
         redis_connect.set(str(chainIndex)+'li'+str(node.index)+'amt',node.data.amount)
     return 0
+
+def setChainNode(chainNode,redis_connect):
+    if (redis_connect == None):
+        print("connect is None,please check")
+        pass
+    if chainNode == None:
+        print("no such chainName")
+        return -1
+    if True != isinstance(chainNode,ChainNode.ChainNodeList):
+        print("redis recover error: input is not type of chainNode")
+        return -1
+    redis_connect.set(str(chainNode.index)+'time',chainNode.time)
+    redis_connect.set(str(chainNode.index)+'pre',chainNode.pre_hash)
+    redis_connect.set(str(chainNode.index)+'hash',chainNode.hash)
+    redis_connect.set(str(chainNode.index)+'nums',chainNode.listNum)
+    nowNums = 0
+    for node in chainNode.point:
+        redis_connect.set(str(chainNode.index)+"li"+str(nowNums)+'act',node.data.account)
+        redis_connect.set(str(chainNode.index) + "li" + str(nowNums) + 'add', node.data.address)
+        redis_connect.set(str(chainNode.index) + "li" +str(nowNums) + 'cate', node.data.category)
+        redis_connect.set(str(chainNode.index) + "li" +str(nowNums) + 'amt', node.data.amount)
+        nowNums += 1
+    return 0
+
+def getChainNode(chainIndex,redis_connect):
+    if (redis_connect == None):
+        print("connect is None,please check")
+        pass
+    if chainIndex == 0:
+        print("no such chainIndex")
+        return -1
+    input = {}
+    in_point = ChainNode.Chain()
+    input['index'] = chainIndex
+    input['time'] = redis_connect.get(str(chainIndex) + 'time')
+    input['pre_hash'] = redis_connect.get(str(chainIndex) + 'pre')
+    input['hash'] = redis_connect.get(str(chainIndex) + 'hash')
+    listNums = redis_connect.get(str(chainIndex) + 'nums')
+    ret_Node = ChainNode.ChainNodeList(**input)
+    for index in range(0,int(listNums)):
+        nowNode = {}
+        nowNode['index'] = index
+        nowNode['account'] = redis_connect.get(str(chainIndex) + "li" + str(index) + 'act')
+        nowNode['address'] = redis_connect.get(str(chainIndex) + "li" + str(index) + 'add')
+        nowNode['category'] = redis_connect.get(str(chainIndex) + "li" + str(index) + 'cate')
+        nowNode['amount'] = int(redis_connect.get(str(chainIndex) + "li" + str(index) + 'amt'))
+        ret_Node.appendNode(ChainNode.Node(**nowNode))
+    return ret_Node
+
