@@ -13,54 +13,62 @@ def printItem(event):
     print(lb.get(lb.curselection()))
 
 def printQRCode(event):
+    chooseName = lb.get(lb.curselection())
     top = Toplevel()
-    qrLoad = Image.open('../image/pj.png')
+    qrLoad = Image.open('../image/'+chooseName+'.png')
     render = ImageTk.PhotoImage(qrLoad)
     imgLoad = Label(top,image=render)
     imgLoad.image = render
     imgLoad.pack()
-    Label(top,text=lb.get(lb.curselection())).pack()
+    Label(top,text=cryptor.getPayAddr(chooseName)).pack()
 
 def getRandom():
     return os.urandom(10)
 
+def getWalletList():
+    if os.path.isdir("../KeyFile"):
+        return os.listdir("../KeyFile")
+    else:
+        return -1
+
+
 def createKey():
-    cryptor.createKey(e_user.get())
+    if cryptor.createKey(e_user.get()) == -1:
+        return -1
     lb.insert(END,e_user.get())
+    list_item.append(e_user.get())
+    return 0
 
 def createAccountInfo():
-    top = Toplevel()
-    e_user = Entry(top)
-    l_user = Label(top, text='名称：').pack()
-    e_user.bind("<Return>",createKey)
-    e_user.pack()
-    Button(top, text="生成", command=createKey).pack()
+    acc_top = Toplevel()
+    if createKey() == -1:
+        err_info = Label(acc_top,text="已存在该密钥名称，请更换").pack()
+    else:
+        user_name = Label(acc_top,text="创建成功，密钥名称为"+e_user.get()).pack()
+        user_value = Label(acc_top, text="钱包地址为："+cryptor.getPayAddr(e_user.get())).pack()
     # lb.insert(END,getRandom())
 
+#start
 root = Tk()
 root.wm_title("Anony Pay")
 root.geometry("400x300+300+100")
-
-#top define
-
-e_user = Entry()
-
 var = StringVar()
+e_user = Entry(root)
 
 lb = Listbox(root,listvariable = var)
-list_item = [1,2,3,4]
-for item in list_item:
-    lb.insert(END,item)
-
+list_item = getWalletList()
+if list_item != -1:
+    for item in list_item:
+        lb.insert(END,item)
 scroll = Scrollbar(root)
 scroll.pack()
 lb.configure(yscrollcommand = scroll.set)
 lb.pack(side=LEFT, fill=BOTH)
 scroll['command'] = lb.yview
-
 lb.bind('<ButtonRelease-1>', printQRCode)
 lb.pack()
 
+e_user.pack()
 Button(root,text="新建钱包",command=createAccountInfo).pack()
 # menubar = Menu(root)
 # menulist1 = Menu(root)
@@ -71,5 +79,5 @@ Button(root,text="新建钱包",command=createAccountInfo).pack()
 # menubar.add_cascade(label = "文件",menu = menulist1)
 #
 # root['menu'] = menubar
-
 root.mainloop()
+
