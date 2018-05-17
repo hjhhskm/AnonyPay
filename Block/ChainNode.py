@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import hashlib as hasher
 import sys
+import os
 import datetime as dater
 
 class cNode:
@@ -89,6 +90,63 @@ class ChainNodeList:
                 continue
             print(disNode.data.display())
 
+def createNewBlock(pub_list,pay_list,cash_list,all_amount,cashNum,change_addr,pay_addr):
+    block = {}
+    block['index'] = len(os.listdir("../data/Chain"))
+    block['time'] = dater.datetime.now().strftime('%Y%m%d%H%M%S%f')
+    listNum = len(pub_list)
+
+    with open("../data/Chain/ChainNode_"+str(block['index'])+".json","r") as f:
+        #warning :直接读取文件第6行获取pre_hash值，如果文件结构发生变动，此处需要修改
+        for i in range(5):
+            f.readline()
+        block['pre_hash'] = f.readline().split('\"')[3]
+        f.close()
+    #需要加上recv交易
+    create_block = ChainNodeList(**block)
+
+    #找零
+    trans_info = {}
+    trans_info['index'] = 0
+    trans_info['tfrom'] = "0"
+    trans_info['account'] = str(pub_list[0])
+    trans_info['address'] = pay_addr
+    trans_info['category'] = 'send'
+    trans_info['amount'] = int(cashNum)
+    pay_list[0] -= int(cashNum)
+    create_block.appendNode(Node(**trans_info))
+
+    #send
+    for iter in range(0,listNum):
+        trans_info = {}
+        trans_info['index'] = iter+1
+        trans_info['tfrom'] = "0"
+        trans_info['account'] = pub_list[iter]
+        trans_info['address'] = pay_addr
+        trans_info['category'] = 'send'
+        trans_info['amount'] = pay_list[iter]
+        create_block.appendNode(Node(**trans_info))
+
+    trans_info = {}
+    trans_info['index'] = listNum+1
+    trans_info['tfrom'] = "0"
+    trans_info['account'] = "0"
+    trans_info['address'] = pay_addr
+    trans_info['category'] = 'recv'
+    trans_info['amount'] = int(all_amount)
+    create_block.appendNode(Node(**trans_info))
+
+    trans_info = {}
+    trans_info['index'] = listNum + 2
+    trans_info['tfrom'] = "0"
+    trans_info['account'] = "0"
+    trans_info['address'] = change_addr
+    trans_info['category'] = 'recv'
+    trans_info['amount'] = int(cashNum)
+    create_block.appendNode(Node(**trans_info))
+
+    create_block.display()
+    pass
 #test
 # list = Chain()
 # list.append(cNode("a"))

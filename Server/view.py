@@ -53,7 +53,62 @@ def createAccountInfo():
 
 #transaction function
 def transAuto():
-    
+    trans_cash = int(e_trans.get())
+    trans_addr = e_addr.get()
+
+    utxo_list = transAction.calcUtxo(cryptor.getWalletAddListByName(list_item), e_Chain)
+    overage = transAction.calcOverage(utxo_list)
+    try:
+        if trans_cash > overage:
+            acc_top = Toplevel()
+            err_info = Label(acc_top, text="\t\t\t余额不足，请充值后重试\t\t\t\t").pack()
+            return
+    except ValueError:
+        return
+    ave_list = {}
+    item_nums = 0
+    for u_key in utxo_list:
+        ave_list[list_item[item_nums]] = 0
+
+        for u_node in utxo_list[u_key]:
+            ave_list[list_item[item_nums]] += utxo_list[u_key][u_node]
+        item_nums += 1
+
+    sort_list = sorted(ave_list.items(), key=lambda x:x[1],reverse=True)
+    #algorithm
+    num_choice = -1
+    choice_list = []
+    pay_list = []
+    count = 0
+    pay_Choice = 0
+    for node in sort_list:
+        if node[1] >= trans_cash:
+            num_choice = node[0]
+            pay_Choice = node[1]
+        else:
+            break
+    #整个钱包组每个钱包都没有支付额大
+
+    if num_choice == -1:
+        count = trans_cash
+        for node in sort_list:
+            choice_list.append(node[0])
+            pay_list.append(node[1])
+            count -= node[1]
+            if count <= 0:
+                break
+    #存在单个比支付额大的钱包
+    else:
+        choice_list.append(num_choice)
+        pay_list.append(pay_Choice)
+        count = trans_cash - pay_Choice
+    ret = transAction.calcPayAccount(choice_list,pay_list,trans_cash,0-count,trans_addr)
+    #如果交易成功，则打印相关信息
+    if ret == 0:
+        acc_top = Toplevel()
+        err_info = Label(acc_top, text="\t\t\t交易成功\t\t\t\t").pack()
+    #更新余额
+    getOverage()
     pass
 
 #Overage calculation
@@ -102,7 +157,7 @@ Label(text="交易地址").pack()
 e_addr.pack(padx=10,pady=10)
 Button(root,text="执行交易",command=transAuto).pack(padx=10)
 Button(root,text="查询余额",command=getOverage).pack(padx=10)
-
+getOverage()
 # menubar = Menu(root)
 # menulist1 = Menu(root)
 #
