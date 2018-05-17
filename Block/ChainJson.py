@@ -1,5 +1,5 @@
 import json
-from ChainNode import ChainNodeList,cNode,Chain,Node
+from Block import ChainNode
 import simplejson
 
 def recoverFromFile(chainIndex):
@@ -18,9 +18,10 @@ def recoverFromFile(chainIndex):
         nowdata = nowdata + line
     get_json = simplejson.loads(nowdata)
     file.close()
-    chainNode = ChainNodeList(**get_json)
+
+    chainNode = ChainNode.ChainNodeList(**get_json)
     for get_node in get_json['point']:
-        chainNode.appendNode(Node(**get_node))
+        chainNode.appendNode(ChainNode.Node(**get_node))
     return chainNode
     pass
 
@@ -41,7 +42,7 @@ def backUpToJson(chainLine,chainIndex):
     for line in chainLine :
         node_str = []
         for node in line.data.point:
-            node_str.append({"index" : node.data.index, "account" : node.data.account, "address" : node.data.address,\
+            node_str.append({"index" : node.data.index,"tfrom" : node.data.tfrom, "account" : node.data.account, "address" : node.data.address,\
                        "category" : node.data.category,"amount" : node.data.amount})
         block_str = {'index' : line.data.index,'time': line.data.time, 'pre_hash':\
                     line.data.pre_hash, 'listNum': line.data.listNum, 'hash': line.data.hash,'point' : node_str}

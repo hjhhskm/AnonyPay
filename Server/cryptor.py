@@ -5,10 +5,25 @@ import hashlib
 from base58 import *
 import base64
 
-import codeCreate
+import Server.codeCreate
+
+def makePayAddr(publicKey):
+    hash_256 = hashlib.sha3_256()
+    hash_256.update(str(publicKey).encode("utf-8"))
+    hash_256_value = hash_256.hexdigest()
+
+    hash_256_2 = hashlib.sha3_256()
+    hash_256_2.update(str(hash_256_value).encode('utf-8'))
+    hash_256_2_value = hash_256_2.hexdigest()
+
+    # 使用RIPEMD160对上一次结果进行运算
+    rip_160 = hashlib.new("ripemd160", hash_256_2_value.encode('utf-8'))
+    rip_160_value = rip_160.hexdigest()
+
+    return rip_160_value
 
 def createKey(name):
-    (publickey, privatekey) =  rsa.newkeys(1280)
+    (publickey, privatekey) =  rsa.newkeys(1536)
     if os.path.exists("../KeyFile/"+name):
         print("name is already exists")
         return -1
@@ -36,7 +51,7 @@ def createKey(name):
     # 使用RIPEMD160对上一次结果进行运算
     rip_160 = hashlib.new("ripemd160", hash_256_2_value.encode('utf-8'))
     rip_160_value = rip_160.hexdigest()
-    codeCreate.getCountAddress(name, rip_160_value)
+    Server.codeCreate.getCountAddress(name, rip_160_value)
     with open(dirName + "/" + addName, "w+") as addF:
         addF.write(rip_160_value)
         addF.close()
@@ -47,6 +62,7 @@ def createKey(name):
 def getPayAddr(name):
     with open('../KeyFile/'+name+'/add_'+name+'.addr', 'r') as f:
         addr = f.readline()
+        f.close()
     return addr
 
 def signByPriv(name,data):
@@ -55,36 +71,26 @@ def signByPriv(name,data):
     signature = rsa.sign(data.encode(), privatekey, 'SHA-1')
     return signature
 
-def verifyByPub(name,message,signature):
-    with open('../KeyFile/'+name+'/pub_'+name+'.pem', 'r') as f:
-        publickey = rsa.PublicKey.load_pkcs1(f.read().encode())
+def verifyByPub(publicKey,message,signature):
     try:
-        result = rsa.verify(message.encode(),signature, publickey)
+        result = rsa.verify(message.encode(),signature, publicKey)
     except rsa.pkcs1.VerificationError:
         print("verify failed")
         return False
     else:
         return result
 
-#function test
-# (publickey,privatekey) = rsa.newkeys(1024)
-#
-# print("public key is :",str(publickey),"\nprivate key is :",str(privatekey))
-#
-# message = "I love PJ12321321I love PJ12321321I love PJ12321321I love "
-#
-# crypto = rsa.encrypt(message.encode(),publickey)
-#
-# print("crypto message is :\n",str(crypto))
-#
-# re_message = rsa.decrypt(crypto,privatekey)
-#
-# print("message is :\n",re_message)
-#
-# signature = rsa.sign(message.encode(),privatekey,'SHA-1')
-#
-# print(rsa.verify(message.encode(),signature,publickey))
-#
+def getPub(name):
+    with open('../KeyFile/'+name+'/pub_'+name+'.pem', 'r') as f:
+        publicKey = rsa.PublicKey.load_pkcs1(f.read().encode())
+        f.close()
+    return publicKey
+
+def getWalletAddListByName(nameList):
+    AddList = []
+    for name in nameList:
+        AddList.append(getPayAddr(name))
+    return AddList
 
 #test
 # # createKey("zhangjbd")

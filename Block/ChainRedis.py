@@ -227,6 +227,7 @@ def setChainNode(chainNode,redis_connect):
     redis_connect.set(str(chainNode.index)+'nums',chainNode.listNum)
     nowNums = 0
     for node in chainNode.point:
+        redis_connect.set(str(chainNode.index)+"li"+str(nowNums)+'from',node.data.tfrom)
         redis_connect.set(str(chainNode.index)+"li"+str(nowNums)+'act',node.data.account)
         redis_connect.set(str(chainNode.index) + "li" + str(nowNums) + 'add', node.data.address)
         redis_connect.set(str(chainNode.index) + "li" +str(nowNums) + 'cate', node.data.category)
@@ -252,6 +253,7 @@ def getChainNode(chainIndex,redis_connect):
     for index in range(0,int(listNums)):
         nowNode = {}
         nowNode['index'] = index
+        nowNode['from'] = redis_connect.get(str(chainIndex) + "li" + str(index) + 'from')
         nowNode['account'] = redis_connect.get(str(chainIndex) + "li" + str(index) + 'act')
         nowNode['address'] = redis_connect.get(str(chainIndex) + "li" + str(index) + 'add')
         nowNode['category'] = redis_connect.get(str(chainIndex) + "li" + str(index) + 'cate')

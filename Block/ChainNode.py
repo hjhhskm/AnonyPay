@@ -34,6 +34,7 @@ class Chain:
 class Node:
     def __init__(self,**input):
         self.index = input['index']
+        self.tfrom = input['tfrom']
         self.account = input["account"]
         self.address = input["address"]
         self.category = input["category"]
@@ -41,7 +42,7 @@ class Node:
         pass
 
     def display(self):
-        str = '%s : %d\n%s : %s\n%s : %s\n%s : %s\n%s : %f' % ("index", self.index, "account", self.account, \
+        str = '%s : %d\n%s : %s\n%s : %s\n%s : %s\n%s : %s\n%s : %f' % ("index", self.index,"from",self.tfrom, "account", self.account, \
                "address", self.address, "category", self.category,"amount", self.amount)
         return str
 
